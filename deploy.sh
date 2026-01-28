@@ -40,12 +40,15 @@ echo -e "${YELLOW}→ Target: ${SERVER_USER}@${SERVER_IP}:${SERVER_PATH}${NC}"
 echo -e "${YELLOW}→ Source: ${LOCAL_PATH}${NC}"
 echo ""
 
-# Create remote directory if not exists
-echo -e "${CYAN}[1/3] Creating remote directory...${NC}"
-ssh -i ${SSH_KEY} ${SERVER_USER}@${SERVER_IP} "sudo mkdir -p ${SERVER_PATH} && sudo chown -R ${SERVER_USER}:${SERVER_USER} ${SERVER_PATH}"
+# Check remote directory exists
+echo -e "${CYAN}[1/3] Checking remote directory...${NC}"
+ssh -i ${SSH_KEY} ${SERVER_USER}@${SERVER_IP} "mkdir -p ${SERVER_PATH}" 2>/dev/null
 
 if [ $? -ne 0 ]; then
-    echo -e "${RED}Failed to create remote directory${NC}"
+    echo -e "${RED}Failed to access remote directory${NC}"
+    echo -e "${YELLOW}Tip: Run this on server first:${NC}"
+    echo -e "  sudo mkdir -p ${SERVER_PATH}"
+    echo -e "  sudo chown -R ${SERVER_USER}:${SERVER_USER} ${SERVER_PATH}"
     exit 1
 fi
 echo -e "${GREEN}✓ Remote directory ready${NC}"
@@ -71,13 +74,12 @@ echo ""
 
 # Set correct permissions
 echo -e "${CYAN}[3/3] Setting permissions...${NC}"
-ssh -i ${SSH_KEY} ${SERVER_USER}@${SERVER_IP} "sudo chown -R www-data:www-data ${SERVER_PATH} && sudo chmod -R 755 ${SERVER_PATH}"
+ssh -i ${SSH_KEY} ${SERVER_USER}@${SERVER_IP} "chmod -R 755 ${SERVER_PATH}"
 
 if [ $? -ne 0 ]; then
-    echo -e "${RED}Failed to set permissions${NC}"
-    exit 1
+    echo -e "${YELLOW}Warning: Could not set permissions (may need manual fix)${NC}"
 fi
-echo -e "${GREEN}✓ Permissions set${NC}"
+echo -e "${GREEN}✓ Done${NC}"
 echo ""
 
 echo -e "${GREEN}${BOLD}═══════════════════════════════════════════════════════${NC}"
